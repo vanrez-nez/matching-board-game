@@ -32,6 +32,7 @@ export default class Canvas {
   appendToBody() {
     document.body.appendChild(this.domElement);
     this.clear();
+    return this;
   }
 
   clear() {
@@ -42,6 +43,7 @@ export default class Canvas {
       context.fillStyle = clearColor;
       context.fillRect(0, 0, width, height);
     }
+    return this;
   }
 
   onMouseMove(e) {
@@ -59,6 +61,7 @@ export default class Canvas {
     this.height = height;
     this.domElement.width = width;
     this.domElement.height = height;
+    return this;
   }
 
   onFrame() {
@@ -73,6 +76,7 @@ export default class Canvas {
       this.running = true;
       this.onFrame();
     }
+    return this;
   }
 
   stopFrameLoop() {
@@ -81,5 +85,6 @@ export default class Canvas {
       window.cancelAnimationFrame(this.rafHandle);
       this.rafHandle = null;
     }
+    return this;
   }
 }
