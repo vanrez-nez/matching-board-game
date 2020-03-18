@@ -8,10 +8,10 @@ const COLORS = [
 ];
 
 export default class BoardPiece {
-  constructor({ type, col, row, size }) {
+  constructor({ type, x, y, size }) {
     this.type = type;
-    this.col = col;
-    this.row = row;
+    this.x = x;
+    this.y = y;
     this.color = new Color().fromHex(COLORS[type]);
     this.size = size;
     this.position = new Vec2();
@@ -19,7 +19,8 @@ export default class BoardPiece {
     this.positionTo = new Vec2();
     this.positionProgress = 1;
     this.isHover = false;
-    this.moveTo(col, row);
+    this.test = false;
+    this.moveTo(x, y);
   }
 
   updateAnimation() {
@@ -27,10 +28,10 @@ export default class BoardPiece {
 
   }
 
-  moveTo(col, row, animate = false) {
+  moveTo(x, y, animate = false) {
     const { size, position, positionFrom, positionTo } = this;
-    const toX = row * size;
-    const toY = col * size;
+    const toX = x * size;
+    const toY = y * size;
     if (animate) {
       positionFrom.copy(position);
       positionTo.set(toX, toY);
@@ -52,6 +53,7 @@ export default class BoardPiece {
     const { x, y } = this.position;
     context.beginPath();
     context.fillStyle = isHover ? color.toHSLString(0, 10, 10) : color.toHSLString();
+    if (this.test) context.fillStyle = 'red';
     context.fillRect(x, y, size, size);
     context.strokeStyle = isHover ? color.toHSLString(0, 20, 40) : color.toHSLString(0, 10, 20);
     context.rect(x, y, size - 1, size - 1);
