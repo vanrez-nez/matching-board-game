@@ -51,11 +51,11 @@ export default class BoardPiece {
     const { isHover, size, color } = this;
     const { x, y } = this.position;
     context.beginPath();
-    context.fillStyle = isHover ? color.toHSLString(0, 10) : color.toHSLString(-1);
+    context.fillStyle = isHover ? color.toHSLString(0, 10, 10) : color.toHSLString();
     context.fillRect(x, y, size, size);
-    // context.strokeStyle = isHover ? color.toHSLString(0, 20) : color.toHSLString();
-    // context.rect(x, y, size - 1, size - 1);
-    // context.stroke();
+    context.strokeStyle = isHover ? color.toHSLString(0, 20, 40) : color.toHSLString(0, 10, 20);
+    context.rect(x, y, size - 1, size - 1);
+    context.stroke();
     context.closePath();
   }
 }

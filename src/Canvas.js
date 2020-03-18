@@ -1,11 +1,20 @@
 const NOOP = () => {};
 
+
+function toLocalCoords(domElement, mouseEvent) {
+  const rect = domElement.getBoundingClientRect();
+  const x = mouseEvent.clientX - rect.left;
+  const y = mouseEvent.clientY - rect.top;
+  return [x, y];
+}
+
 export default class Canvas {
   constructor({
     width,
     height,
     onFrameCallback = NOOP,
     onMouseMoveCallback = NOOP,
+    onMouseClickCallback = NOOP,
   }) {
     this.domElement = document.createElement('canvas');
     this.context = this.domElement.getContext('2d');
@@ -13,9 +22,11 @@ export default class Canvas {
     this.resize(width, height);
     this.onFrameCallback = onFrameCallback;
     this.onMouseMoveCallback = onMouseMoveCallback;
+    this.onMouseClickCallback = onMouseClickCallback;
     this.rafHandle = null;
     this.running = false;
     this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
+    this.domElement.addEventListener('click', this.onMouseClick.bind(this));
   }
 
   appendToBody() {
@@ -34,10 +45,13 @@ export default class Canvas {
   }
 
   onMouseMove(e) {
-    const rect = this.domElement.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const [x, y] = toLocalCoords(this.domElement, e);
     this.onMouseMoveCallback(x, y);
+  }
+
+  onMouseClick(e) {
+    const [x, y] = toLocalCoords(this.domElement, e);
+    this.onMouseClickCallback(x, y);
   }
 
   resize(width, height) {

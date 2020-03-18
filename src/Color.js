@@ -1,3 +1,5 @@
+import { clamp } from './Utils';
+
 export default class Color {
   constructor(r, g, b) {
     this.hsl = { h: 0, s: 0, l: 0 };
@@ -9,18 +11,18 @@ export default class Color {
     hex = Math.floor( hex );
     this.hex = hex;
     /* eslint-disable no-mixed-operators */
-    const r = (hex >> 16 & 255) / 255;
-    const g = (hex >> 8 & 255) / 255;
-    const b = ( hex & 255) / 255;
+    const r = (hex >> 16 & 255);
+    const g = (hex >> 8 & 255);
+    const b = ( hex & 255);
     this.set(r, g, b);
-    
+
     return this;
   }
 
   set(r = 0, g = 0, b = 0) {
-    this.r = r;
-    this.g = g;
-    this.b = b;
+    this.r = r / 255;
+    this.g = g / 255;
+    this.b = b / 255;
 
     this.updateHSL();
     return this;
@@ -57,9 +59,9 @@ export default class Color {
 
   toHSLString(hueOffset = 0, saturationOffset = 0, lightnessOffset = 0) {
     const { h, s, l } = this.hsl;
-    const hStr = (h * 360).toFixed(3) + hueOffset;
-    const sStr = (s * 100).toFixed(3) + saturationOffset;
-    const lStr = (l * 100).toFixed(3) + lightnessOffset;
-    return `hsl(${hStr}, ${sStr}%, ${lStr}%);`;
+    const hStr = clamp(h * 360 + hueOffset, 0, 360);
+    const sStr = clamp(s * 100 + saturationOffset, 0, 100);
+    const lStr = clamp(l * 100 + lightnessOffset, 0, 100);
+    return `hsl(${hStr}, ${sStr}%, ${lStr}%)`;
   }
 }

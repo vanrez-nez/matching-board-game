@@ -18,6 +18,7 @@ const canvas = new Canvas({
   height: SIZE * ROWS,
   onFrameCallback: onFrame,
   onMouseMoveCallback: onMouseMove,
+  onMouseClickCallback: onMouseClick,
 });
 canvas.appendToBody();
 canvas.startFrameLoop();
@@ -36,16 +37,18 @@ function drawBoard() {
 }
 
 function onMouseMove(x, y) {
-  hoverCol = Math.floor(y / SIZE);
-  hoverRow = Math.floor(x / SIZE);
+  [hoverRow, hoverCol] = board.snapToGrid(x, y);
+}
+
+function onMouseClick(x, y) {
+  const [xSnap, ySnap] = board.snapToGrid(x, y);
+
 }
 
 let frames = 0;
 function onFrame() {
   drawBoard();
-  if (frames++ > 60*10) {
+  if (frames++ > 60*2) {
     //canvas.stopFrameLoop();
   }
 }
-
-
