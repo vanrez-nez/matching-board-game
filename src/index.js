@@ -1,5 +1,5 @@
 import "./styles.css";
-
+import 'babel-polyfill';
 import Board from './Board';
 import Canvas from "./Canvas";
 
@@ -9,7 +9,6 @@ const SIZE = 50;
 
 let xHover = 0;
 let yHover = 0;
-
 const board = new Board(WIDTH, HEIGHT, SIZE);
 board.reset();
 
@@ -20,8 +19,7 @@ const canvas = new Canvas({
   onMouseMoveCallback: onMouseMove,
   onMouseClickCallback: onMouseClick,
 });
-canvas.appendToBody();
-canvas.startFrameLoop();
+canvas.appendToBody().startFrameLoop();
 
 function drawBoard() {
   const { context } = canvas;
@@ -29,10 +27,11 @@ function drawBoard() {
   canvas.clear();
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
-    const { x, y } = piece;
-    piece.isHover = xHover === x && yHover === y;
-    piece.update();
-    piece.draw(context);
+    if (piece) {
+      const { cellX, cellY } = piece;
+      piece.isHover = xHover === cellX && yHover === cellY;
+      piece.draw(context);
+    }
   }
 }
 
@@ -45,10 +44,6 @@ function onMouseClick(x, y) {
   board.activatePieceAt(xSnap, ySnap);
 }
 
-let frames = 0;
 function onFrame() {
   drawBoard();
-  if (frames++ > 60*2) {
-    //canvas.stopFrameLoop();
-  }
 }
