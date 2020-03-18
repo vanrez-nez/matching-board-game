@@ -31,25 +31,31 @@ export default class BoardWalker {
       const [x, y] = [dirX * offset, dirY * offset];
       piece = this.getPieceOffset(x, y);
       if (piece) {
-        callback(piece, offset, direction);
+        if (callback(piece)) {
+          return;
+        }
         offset++;
       }
     } while (piece)
   }
 
-  get right() {
-    return this.getPieceOffset(1, 0);
+  getCrossNeighbors(piece) {
+    const result = { Left: [], Right: [], Up: [], Down: [] };
+    this.setPivot(piece.cellX, piece.cellY);
+    for (let key in DIRECTIONS) {
+      this.walk(DIRECTIONS[key], (p) => {
+          result[key].push(p);
+      });
+    }
+    return result;
   }
 
-  get left() {
-    return this.getPieceOffset(-1, 0);
-  }
-
-  get up() {
-    return this.getPieceOffset(0, -1);
-  }
-
-  get down() {
-    return this.getPieceOffset(0, 1);
+  invertDirection(dir) {
+    switch(dir) {
+      case DIRECTIONS.Left: return DIRECTIONS.Right;
+      case DIRECTIONS.Right: return DIRECTIONS.Left;
+      case DIRECTIONS.Up: return DIRECTIONS.Down;
+      case DIRECTIONS.Down: return DIRECTIONS.Up;
+    }
   }
 }
