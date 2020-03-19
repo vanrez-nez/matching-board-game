@@ -1,4 +1,4 @@
-import { gsap, Power4 } from 'gsap';
+import { gsap, Back, Bounce } from 'gsap';
 import Vec2 from "./Vec2";
 import Color from "./Color";
 
@@ -20,14 +20,22 @@ export default class BoardPiece {
     this.moveTo(slot);
   }
 
-  async moveTo(slot, animate = false) {
+  async fallTo(slot) {
+    return this.moveTo(slot, true, Bounce.easeOut);
+  }
+
+  async shiftTo(slot) {
+    return this.moveTo(slot, true, Back.easeInOut);
+  }
+
+  async moveTo(slot, animate = false, easing = Back.easeIn) {
     const { size, position } = this;
     return new Promise((done) => {
       if (animate) {
-        gsap.to(position, 0.4, {
+        gsap.to(position, 0.5, {
           x: slot.x * size,
           y: slot.y * size,
-          ease: Power4.easeInOut,
+          ease: easing,
           onComplete: done,
         });
       } else {

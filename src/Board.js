@@ -62,7 +62,7 @@ export default class Board {
 
   async mergePieces(fromPiece, toPiece) {
     fromPiece.slot = null;
-    await fromPiece.moveTo(toPiece.slot, true);
+    await fromPiece.shiftTo(toPiece.slot);
     const idx = this.pieces.indexOf(fromPiece);
     this.pieces.splice(idx, 1);
   }
@@ -70,7 +70,7 @@ export default class Board {
   async shiftPiece(piece, direction) {
     const newSlot = this.grid.getNeighbor(piece.slot, direction);
     piece.slot = newSlot;
-    await piece.moveTo(newSlot, true);
+    await piece.shiftTo(newSlot, true);
   }
 
   applyGravity() {
@@ -80,10 +80,10 @@ export default class Board {
     for (let i = 0; i < pieces.length; i++) {
       const piece = pieces[i];
       if (!piece.slot) continue;
-      const slot = grid.getNeighbor(piece.slot, DIRECTIONS.Right);
+      const slot = grid.getNeighbor(piece.slot, DIRECTIONS.Down);
       if (slot && !this.getPieceAt(slot.x, slot.y)) {
         piece.slot = slot;
-        piece.moveTo(slot, true);
+        piece.fallTo(slot);
         applied = true;
       }
     }
