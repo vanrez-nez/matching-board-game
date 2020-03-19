@@ -10,6 +10,14 @@ export default class Board {
     this.map = null;
   }
 
+  loadRandomMap() {
+    const map = [];
+    for (let i = 0; i < this.grid.length; i++) {
+      map[i] = Math.floor(Math.random() * 4);
+    }
+    this.loadMap(map);
+  }
+
   loadMap(map) {
     if (map.length !== this.grid.length) {
       console.warn('Map size mismatch');
@@ -59,16 +67,36 @@ export default class Board {
     this.pieces.splice(idx, 1);
   }
 
-  shiftPiece(piece, direction) {
+  async shiftPiece(piece, direction) {
     const newSlot = this.grid.getNeighbor(piece.slot, direction);
     piece.slot = newSlot;
-    piece.moveTo(newSlot, true);
+    await piece.moveTo(newSlot, true);
   }
 
-  activatePieceAt(x, y) {
+  applyGravity() {
+    const { grid, pieces } = this;
+    this.remapPieces();
+    let applied = false;
+    for (let i = 0; i < pieces.length; i++) {
+      const piece = pieces[i];
+      if (!piece.slot) continue;
+      const slot = grid.getNeighbor(piece.slot, DIRECTIONS.Right);
+      if (slot && !this.getPieceAt(slot.x, slot.y)) {
+        piece.slot = slot;
+        piece.moveTo(slot, true);
+        applied = true;
+      }
+    }
+    if (applied) {
+      this.applyGravity();
+    }
+  }
+
+  async activatePieceAt(x, y) {
     const { grid } = this;
     this.remapPieces();
     const piece = this.getPieceAt(x, y);
+    const moves = [];
     if (!piece) return;
     const crossNeighbors = grid.getCrossNeighbors(piece.slot);
     for (let dir in crossNeighbors) {
@@ -80,13 +108,17 @@ export default class Board {
         if (!current) break;
         const shiftDir = grid.invertDirection(DIRECTIONS[dir]);
         if (i === 0 && current.type === piece.type) {
-          this.mergePieces(current, piece, shiftDir);
+          const move = this.mergePieces(current, piece, shiftDir);
+          moves.push(move);
           attract = true;
         } else if (attract) {
-          this.shiftPiece(current, shiftDir);
+          const move = this.shiftPiece(current, shiftDir);
+          moves.push(move);
         }
       }
     }
+    await Promise.all(moves);
+    this.applyGravity();
   }
 
   get rows() {

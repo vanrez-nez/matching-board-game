@@ -7,25 +7,11 @@ let xHover = 0;
 let yHover = 0;
 
 const board = new Board({
-  rows: 4,
-  cols: 4,
-  cellSize: 90,
+  rows: 10,
+  cols: 10,
+  cellSize: 40,
 });
-
-board.loadMap([
-  1, 0, 1, 1,
-  0, 1, 1, 1,
-  0, 0, 0, 0,
-  1, 1, 0, 0,
-]);
-
-// board.loadMap([
-//   0, 0, 0, 1, 1,
-//   0, 0, 2, 1, 0,
-//   1, 2, 2, 0, 1,
-//   0, 2, 1, 1, 0,
-//   1, 0, 1, 0, 1,
-// ]);
+board.loadRandomMap();
 
 const canvas = new Canvas({
   width: board.width,
