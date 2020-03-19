@@ -3,18 +3,33 @@ import 'babel-polyfill';
 import Board from './Board';
 import Canvas from "./Canvas";
 
-const WIDTH = 5;
-const HEIGHT = 5;
-const SIZE = 50;
-
 let xHover = 0;
 let yHover = 0;
-const board = new Board(WIDTH, HEIGHT, SIZE);
-board.reset();
+
+const board = new Board({
+  rows: 4,
+  cols: 4,
+  cellSize: 90,
+});
+
+board.loadMap([
+  1, 0, 1, 1,
+  0, 1, 1, 1,
+  0, 0, 0, 0,
+  1, 1, 0, 0,
+]);
+
+// board.loadMap([
+//   0, 0, 0, 1, 1,
+//   0, 0, 2, 1, 0,
+//   1, 2, 2, 0, 1,
+//   0, 2, 1, 1, 0,
+//   1, 0, 1, 0, 1,
+// ]);
 
 const canvas = new Canvas({
-  width: SIZE * HEIGHT,
-  height: SIZE * WIDTH,
+  width: board.width,
+  height: board.height,
   onFrameCallback: onFrame,
   onMouseMoveCallback: onMouseMove,
   onMouseClickCallback: onMouseClick,
@@ -27,13 +42,15 @@ function drawBoard() {
   canvas.clear();
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
-    if (piece) {
-      const { cellX, cellY } = piece;
-      piece.isHover = xHover === cellX && yHover === cellY;
-      piece.draw(context);
+    if (piece.slot) {
+      const { x, y } = piece.slot;
+      piece.isHover = xHover === x && yHover === y;
     }
+    piece.draw(context);
   }
 }
+
+console.log(board, canvas)
 
 function onMouseMove(x, y) {
   [xHover, yHover] = board.snapToGrid(x, y);

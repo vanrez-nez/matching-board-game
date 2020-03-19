@@ -1,25 +1,49 @@
-
-import BoardPiece from './BoardPiece'
-import BoardWalker, { DIRECTIONS } from './BoardWalker';
+import { DIRECTIONS } from './Grid';
+import Grid from './Grid';
+import BoardPiece from './BoardPiece';
 
 export default class Board {
-  constructor(width, height, cellSize) {
-    this.pieces = [];
-    this.width = width;
-    this.height = height;
+  constructor({ rows, cols, cellSize }) {
     this.cellSize = cellSize;
-    this.walker = new BoardWalker(this);
+    this.grid = new Grid({ rows, cols });
+    this.pieces = [];
+    this.map = null;
   }
 
-  generate() {
-    const { width, height, cellSize: size } = this;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const type = Math.floor(Math.random() * 3);
-        const piece = new BoardPiece({ type, size, cellX: x, cellY: y });
-        this.pieces.push(piece);
-      }
+  loadMap(map) {
+    if (map.length !== this.grid.length) {
+      console.warn('Map size mismatch');
+      return false;
     }
+    this.createGridPieces(map);
+    this.remapPieces();
+  }
+
+  createGridPieces(map) {
+    const { grid, cellSize } = this;
+    const pieces = [];
+    for (let i = 0; i < grid.length; i++) {
+      const slot = grid.slots[i];
+      const type = map[i];
+      pieces.push(new BoardPiece({ type, slot, size: cellSize }));
+    }
+    this.pieces = pieces;
+  }
+
+  remapPieces() {
+    const { pieces } = this;
+    const map = new WeakMap();
+    for (let i = 0; i < pieces.length; i++) {
+      const piece = pieces[i];
+      map.set(piece.slot, piece);
+    }
+    this.map = map;
+  }
+
+  getPieceAt(x, y) {
+    const slot = this.grid.getSlotAt(x, y);
+    if (!slot) console.warn('Invalid slot:', x, y);
+    return this.map.get(slot);
   }
 
   snapToGrid(x, y) {
@@ -28,70 +52,56 @@ export default class Board {
     return [xOut, yOut];
   }
 
-  isValidCell(x, y) {
-    return (x < this.width && y < this.height && x >= 0 && y >= 0);
-  }
-
-  getPieceAt(x, y) {
-    if (!this.isValidCell(x, y)) return null;
-    return this.pieces[y * this.width + x];
-  }
-
-  setPieceAt(x, y, piece) {
-    if (!this.isValidCell(x, y)) {
-      console.warn('Invalid board position:', x, y, piece);
-      return false;
-    }
-    this.pieces[y * this.width + x] = piece;
-  }
-
-  movePiece(piece, cellX, cellY) {
-    this.setPieceAt(piece.cellX, piece.cellY, null);
-    piece.moveTo(cellX, cellY, true);
-    this.setPieceAt(cellX, cellY, piece);
-  }
-
-  async mergePieces(fromPiece, toPiece, dir) {
-    //console.log('Shifting Piece', fromPiece, dir);
-    //this.movePiece(fromPiece, toPiece.cellX, toPiece.cellY);
-    //this.setPieceAt(fromPiece.cellX, fromPiece.cellY, null);
-    await fromPiece.moveTo(toPiece.cellX, toPiece.cellY, true);
-
+  async mergePieces(fromPiece, toPiece) {
+    fromPiece.slot = null;
+    await fromPiece.moveTo(toPiece.slot, true);
+    const idx = this.pieces.indexOf(fromPiece);
+    this.pieces.splice(idx, 1);
   }
 
   shiftPiece(piece, direction) {
-    const [ shiftX, shiftY ] = direction;
-    const targetX = piece.cellX + shiftX;
-    const targetY = piece.cellY + shiftY;
-    this.movePiece(piece, targetX, targetY);
+    const newSlot = this.grid.getNeighbor(piece.slot, direction);
+    piece.slot = newSlot;
+    piece.moveTo(newSlot, true);
   }
 
   activatePieceAt(x, y) {
-    const { walker } = this;
+    const { grid } = this;
+    this.remapPieces();
     const piece = this.getPieceAt(x, y);
     if (!piece) return;
-    const crossNeighbors = walker.getCrossNeighbors(piece);
-    console.log(crossNeighbors);
+    const crossNeighbors = grid.getCrossNeighbors(piece.slot);
     for (let dir in crossNeighbors) {
       const neighbors = crossNeighbors[dir];
       let attract = false;
       for (let i = 0; i < neighbors.length; i++) {
-        const current = neighbors[i];
-        const shiftDir = walker.invertDirection(DIRECTIONS[dir]);
+        const slot = neighbors[i];
+        const current = this.getPieceAt(slot.x, slot.y);
+        if (!current) break;
+        const shiftDir = grid.invertDirection(DIRECTIONS[dir]);
         if (i === 0 && current.type === piece.type) {
           this.mergePieces(current, piece, shiftDir);
           attract = true;
         } else if (attract) {
-          //console.log(current, shiftDir);
           this.shiftPiece(current, shiftDir);
         }
       }
     }
-    console.log(this);
   }
 
-  reset() {
-    this.pieces = [];
-    this.generate();
+  get rows() {
+    return this.grid.rows;
+  }
+
+  get cols() {
+    return this.grid.cols;
+  }
+
+  get width() {
+    return this.rows * this.cellSize;
+  }
+
+  get height() {
+    return this.cols * this.cellSize;
   }
 }
