@@ -1,16 +1,19 @@
 import { gsap, Back, Bounce } from 'gsap';
 import { DIRECTIONS } from './Grid';
 import Grid from './Grid';
-import { mod, rotateAround, toRadians } from './Utils';
+import { rotateAround, toRadians } from './Utils';
 import BoardPiece from './BoardPiece';
+import Analyser from './Analyser';
 
 export default class Board {
-  constructor({ rows, cols, cellSize }) {
+  constructor({ rows, cols, cellSize, rotation = 0 }) {
     this.cellSize = cellSize;
     this.grid = new Grid({ rows, cols });
     this.pieces = [];
     this.map = null;
-    this.rotation = 0;
+    this.rotation = rotation;
+    this.analyser = new Analyser(this);
+    this.remapPieces();
   }
 
   loadRandomMap() {
@@ -19,6 +22,7 @@ export default class Board {
       map[i] = Math.floor(Math.random() * 6);
     }
     this.loadMap(map);
+    this.analyser.analyse();
   }
 
   loadMap(map) {
@@ -53,7 +57,7 @@ export default class Board {
 
   getPieceAt(x, y) {
     const slot = this.grid.getSlotAt(x, y);
-    if (!slot) console.warn('Invalid slot:', x, y);
+    if (!slot) console.error('Invalid slot:', x, y);
     return this.map.get(slot);
   }
 
@@ -108,7 +112,7 @@ export default class Board {
   }
 
   async activatePieceAt(x, y) {
-    const { grid } = this;
+    const { grid, analyser } = this;
     this.remapPieces();
     const piece = this.getPieceAt(x, y);
     const moves = [];
@@ -134,6 +138,7 @@ export default class Board {
     }
     await Promise.all(moves);
     this.applyGravity();
+    analyser.analyse();
   }
 
   get rows() {
@@ -150,5 +155,18 @@ export default class Board {
 
   get height() {
     return this.cols * this.cellSize;
+  }
+
+  clone() {
+    const { rows, cols, cellSize, pieces, rotation } = this;
+    const clone = new Board({ rows, cols, cellSize, rotation });
+    for (let i = 0; i < pieces.length; i++) {
+      const piece = pieces[i].clone();
+      // rematch old slot references to new grid
+      piece.slot = clone.grid.getSlotAt(piece.slot.x, piece.slot.y);
+      clone.pieces[i] = piece;
+    }
+    clone.remapPieces();
+    return clone;
   }
 }
