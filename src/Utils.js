@@ -2,10 +2,6 @@ export function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
 }
 
-export function mod(current, limit) {
-  return ( (current % limit) + limit ) % limit;
-};
-
 export function rotateAround(centerX, centerY, x, y, angle) {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
