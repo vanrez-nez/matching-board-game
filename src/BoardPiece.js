@@ -3,18 +3,21 @@ import Vec2 from "./Vec2";
 import Color from "./Color";
 
 const COLORS = [
-  0x29c7ac,
-  0xffd868,
-  0xfe346e,
-  0x348afe,
-  0xcc34fe,
-  0x32ca2f,
+  0xF60000,
+  0xFF8C00,
+  0xFFEE00,
+  0x4DE94C,
+  0x3783FF,
+  0x4815AA,
 ];
+
+let PieceId = 0;
 
 export default class BoardPiece {
   constructor({ type, slot, size }) {
     this.type = type;
     this.slot = slot;
+    this.id = PieceId++;
     this.position = new Vec2();
     this.color = new Color().fromHex(COLORS[type]);
     this.size = size;
@@ -23,7 +26,7 @@ export default class BoardPiece {
   }
 
   async fallTo(slot) {
-    return this.moveTo(slot, true, Bounce.easeOut);
+    return this.moveTo(slot, true, Back.easeOut);
   }
 
   async shiftTo(slot) {
@@ -34,7 +37,7 @@ export default class BoardPiece {
     const { size, position } = this;
     return new Promise((done) => {
       if (animate) {
-        gsap.to(position, 0.5, {
+        gsap.to(position, 0.4, {
           x: slot.x * size,
           y: slot.y * size,
           ease: easing,
@@ -58,4 +61,10 @@ export default class BoardPiece {
     context.stroke();
     context.closePath();
   }
+
+  clone() {
+    const { type, slot, size } = this;
+    return new BoardPiece({ type, slot, size });
+  }
+
 }
