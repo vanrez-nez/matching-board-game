@@ -35,24 +35,23 @@ function getMovesCount(board) {
 export default class Analyser {
   constructor(board) {
     this.board = board;
+    this.movesLeft = 0;
   }
 
-  analyse() {
-    console.time('analyse');
+  update() {
     const { board } = this;
+    /*
+      Is not possible to reuse current board to analyse movements
+      because rotations alter its state and is not always posible
+      to return to a previous state by rotating it back
+    */
     const copyBoard = board.clone();
     let totalMoves = 0;
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 8; i++) {
       totalMoves = Math.max(getMovesCount(copyBoard), totalMoves);
       copyBoard.rotation += 90;
       copyBoard.applyGravity();
     }
-    console.timeEnd('analyse');
-    console.log(totalMoves);
+    this.movesLeft = totalMoves;
   }
-
-  hasMovesLeft() {
-
-  }
-
 }
