@@ -22,7 +22,7 @@ export default class Board {
       map[i] = Math.floor(Math.random() * 6);
     }
     this.loadMap(map);
-    this.analyser.analyse();
+    this.analyser.update();
   }
 
   loadMap(map) {
@@ -91,6 +91,24 @@ export default class Board {
     return [Right, Up, Left, Down, Right, Up, Left][3 + quadrant];
   }
 
+  fillEmptySlots() {
+    const { grid, cellSize } = this;
+    const dir = this.getGravityDirection();
+    for (let i = 0; i < grid.length; i++) {
+      const slot = grid.slots[i];
+      if (!this.getPieceAt(slot.x, slot.y)) {
+        const piece = new BoardPiece({
+          type: Math.floor(Math.random() * 5),
+          size: cellSize,
+          slot,
+        });
+        piece.fallTo(slot);
+        this.pieces.push(piece);
+      }
+    }
+    this.remapPieces();
+  }
+
   applyGravity() {
     const { grid, pieces } = this;
     this.remapPieces();
@@ -138,7 +156,11 @@ export default class Board {
     }
     await Promise.all(moves);
     this.applyGravity();
-    analyser.analyse();
+    analyser.update();
+    if (analyser.movesLeft === 0) {
+      console.log('fillEmptySlots')
+      this.fillEmptySlots();
+    }
   }
 
   get rows() {
