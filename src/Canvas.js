@@ -27,7 +27,7 @@ export default class Canvas {
     this.onFrameCallback = onFrameCallback;
     this.onMouseMoveCallback = onMouseMoveCallback;
     this.onMouseClickCallback = onMouseClickCallback;
-    this.onMouseScrollCallback = debounce(onMouseScrollCallback, 100);
+    this.onMouseScrollCallback = debounce(onMouseScrollCallback, 100, { leading: true, trailing: false } );
     this.rafHandle = null;
     this.running = false;
     this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
