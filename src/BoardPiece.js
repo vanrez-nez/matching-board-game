@@ -7,6 +7,8 @@ const COLORS = [
   0xffd868,
   0xfe346e,
   0x348afe,
+  0xcc34fe,
+  0x32ca2f,
 ];
 
 export default class BoardPiece {

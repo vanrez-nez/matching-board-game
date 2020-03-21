@@ -1,5 +1,7 @@
+import { gsap, Back, Bounce } from 'gsap';
 import { DIRECTIONS } from './Grid';
 import Grid from './Grid';
+import { mod, rotateAround, toRadians } from './Utils';
 import BoardPiece from './BoardPiece';
 
 export default class Board {
@@ -8,19 +10,20 @@ export default class Board {
     this.grid = new Grid({ rows, cols });
     this.pieces = [];
     this.map = null;
+    this.rotation = 0;
   }
 
   loadRandomMap() {
     const map = [];
     for (let i = 0; i < this.grid.length; i++) {
-      map[i] = Math.floor(Math.random() * 4);
+      map[i] = Math.floor(Math.random() * 6);
     }
     this.loadMap(map);
   }
 
   loadMap(map) {
     if (map.length !== this.grid.length) {
-      console.warn('Map size mismatch');
+      console.error('Map size mismatch');
       return false;
     }
     this.createGridPieces(map);
@@ -55,8 +58,13 @@ export default class Board {
   }
 
   snapToGrid(x, y) {
-    const xOut = Math.floor(x / this.cellSize);
-    const yOut = Math.floor(y / this.cellSize);
+    const { rotation, cellSize, width, height } = this;
+    const theta = -toRadians(rotation);
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const [rotX, rotY] = rotateAround(centerX, centerY, x, y, theta);
+    const xOut = Math.floor(rotX / cellSize);
+    const yOut = Math.floor(rotY / cellSize);
     return [xOut, yOut];
   }
 
@@ -73,6 +81,12 @@ export default class Board {
     await piece.shiftTo(newSlot, true);
   }
 
+  getGravityDirection() {
+    const quadrant = Math.round(this.rotation / 90) % 4;
+    const { Down, Right, Up, Left } = DIRECTIONS;
+    return [Right, Up, Left, Down, Right, Up, Left][3 + quadrant];
+  }
+
   applyGravity() {
     const { grid, pieces } = this;
     this.remapPieces();
@@ -80,7 +94,8 @@ export default class Board {
     for (let i = 0; i < pieces.length; i++) {
       const piece = pieces[i];
       if (!piece.slot) continue;
-      const slot = grid.getNeighbor(piece.slot, DIRECTIONS.Down);
+      const direction = this.getGravityDirection();
+      const slot = grid.getNeighbor(piece.slot, direction);
       if (slot && !this.getPieceAt(slot.x, slot.y)) {
         piece.slot = slot;
         piece.fallTo(slot);
