@@ -65,12 +65,32 @@ export default class Grid {
     return this.getSlotAt(x + offsetX, y + offsetY);
   }
 
-  invertDirection(dir) {
+  getSlotEdge(pivot, dir) {
+    const { Left, Right, Up, Down } = DIRECTIONS;
+    const { cols, rows } = this;
     switch(dir) {
-      case DIRECTIONS.Left: return DIRECTIONS.Right;
-      case DIRECTIONS.Right: return DIRECTIONS.Left;
-      case DIRECTIONS.Up: return DIRECTIONS.Down;
-      case DIRECTIONS.Down: return DIRECTIONS.Up;
+      case Left: return this.getSlotAt(0, pivot.y);
+      case Right: return this.getSlotAt(cols - 1, pivot.y);
+      case Up: return this.getSlotAt(pivot.x, 0);
+      case Down: return this.getSlotAt(pivot.x, rows - 1);
+    }
+  }
+
+  directionBetween(slotA, slotB) {
+    const { Left, Right, Up, Down } = DIRECTIONS;
+    if (slotA.x > slotB.x) return Right;
+    if (slotA.x < slotB.x) return Left;
+    if (slotA.y > slotB.y) return Down;
+    if (slotA.y < slotB.y) return Up;
+  }
+
+  invertDirection(dir) {
+    const { Left, Right, Up, Down } = DIRECTIONS;
+    switch(dir) {
+      case Left: return Right;
+      case Right: return Left;
+      case Up: return Down;
+      case Down: return Up;
     }
   }
 

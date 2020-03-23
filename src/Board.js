@@ -102,6 +102,9 @@ export default class Board {
           size: cellSize,
           slot,
         });
+        const [offsetX, offsetY] = grid.invertDirection(dir);
+        piece.position.x = piece.size * (piece.slot.x + offsetX);
+        piece.position.y = piece.size * (piece.slot.y + offsetY);
         piece.fallTo(slot);
         this.pieces.push(piece);
       }
