@@ -25,26 +25,26 @@ export default class BoardPiece {
     this.moveTo(slot);
   }
 
-  async fallTo(slot) {
-    return this.moveTo(slot, true, Back.easeOut);
+  async fallTo(slotTo) {
+    return this.moveTo(slotTo, true, Back.easeOut);
   }
 
-  async shiftTo(slot) {
-    return this.moveTo(slot, true, Back.easeInOut);
+  async shiftTo(slotTo) {
+    return this.moveTo(slotTo, true, Back.easeInOut);
   }
 
-  async moveTo(slot, animate = false, easing = Back.easeIn) {
+  async moveTo(slotTo, animate = false, easing = Back.easeIn) {
     const { size, position } = this;
     return new Promise((done) => {
       if (animate) {
-        gsap.to(position, 0.4, {
-          x: slot.x * size,
-          y: slot.y * size,
+        gsap.to(position, 0.3, {
+          x: slotTo.x * size,
+          y: slotTo.y * size,
           ease: easing,
           onComplete: done,
         });
       } else {
-        position.set(slot.x * size, slot.y * size);
+        position.set(slotTo.x * size, slotTo.y * size);
         done();
       }
     });
