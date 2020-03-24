@@ -11,9 +11,9 @@ const state = {
 }
 
 const board = new Board({
-  rows: 10,
-  cols: 10,
-  cellSize: 40,
+  rows: 6,
+  cols: 6,
+  cellSize: 50,
 });
 board.loadRandomMap();
 
@@ -55,7 +55,7 @@ function onMouseScroll(e) {
   state.rotating = true;
   const clockwise = e.deltaY > 0;
   const step = clockwise ? 90 : -90;
-  gsap.to(board, 0.4, {
+  gsap.to(board, 0.35, {
     rotation: board.rotation + step,
     ease: Power4.easeInOut,
     onComplete() {
@@ -68,6 +68,7 @@ function onMouseScroll(e) {
 function onMouseClick(x, y) {
   const [xSnap, ySnap] = board.snapToGrid(x, y);
   board.activatePieceAt(xSnap, ySnap);
+  //board.test(xSnap, ySnap);
 }
 
 function onFrame() {

@@ -3,25 +3,28 @@ import Vec2 from "./Vec2";
 import Color from "./Color";
 
 const COLORS = [
-  0xF60000,
-  0xFF8C00,
-  0xFFEE00,
-  0x4DE94C,
-  0x3783FF,
-  0x4815AA,
+  new Color().fromHex(0xF60000),
+  new Color().fromHex(0xFF8C00),
+  new Color().fromHex(0xFFEE00),
+  new Color().fromHex(0x4DE94C),
+  new Color().fromHex(0x3783FF),
+  new Color().fromHex(0x4815AA),
 ];
+
+const COLOR_LOCKED = new Color().fromHex(0x454147);
 
 let PieceId = 0;
 
 export default class BoardPiece {
-  constructor({ type, slot, size }) {
+  constructor({ type, slot, size, locked = false, power = 1 }) {
     this.type = type;
     this.slot = slot;
     this.id = PieceId++;
     this.position = new Vec2();
-    this.color = new Color().fromHex(COLORS[type]);
     this.size = size;
+    this.power = power;
     this.isHover = false;
+    this.locked = locked;
     this.moveTo(slot);
   }
 
@@ -51,8 +54,9 @@ export default class BoardPiece {
   }
 
   draw(context) {
-    const { isHover, size, color } = this;
+    const { isHover, size, power, locked, type } = this;
     const { x, y } = this.position;
+    const color = locked ? COLOR_LOCKED : COLORS[type];
     context.beginPath();
     context.fillStyle = isHover ? color.toHSLString(0, 10, 10) : color.toHSLString();
     context.fillRect(x, y, size, size);
@@ -60,11 +64,17 @@ export default class BoardPiece {
     context.rect(x, y, size - 1, size - 1);
     context.stroke();
     context.closePath();
+    if (power > 1) {
+      context.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      context.font = 'italic 18px Arial';
+      context.textAlign = 'center';
+      context.fillText(`x${power}`, x + size / 2, y + size / 2);
+    }
   }
 
   clone() {
-    const { type, slot, size } = this;
-    return new BoardPiece({ type, slot, size });
+    const { type, slot, size, locked, power } = this;
+    return new BoardPiece({ type, slot, size, locked, power });
   }
 
 }

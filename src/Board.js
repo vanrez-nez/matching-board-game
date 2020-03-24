@@ -14,6 +14,7 @@ export default class Board {
     this.rotation = rotation;
     this.analyser = new Analyser(this);
     this.remapPieces();
+    this.totalPower = 0;
   }
 
   loadRandomMap() {
@@ -93,10 +94,12 @@ export default class Board {
 
   fillEmptySlots() {
     const { grid, cellSize } = this;
+    let count = 0;
     const dir = this.getGravityDirection();
     for (let i = 0; i < grid.length; i++) {
       const slot = grid.slots[i];
       if (!this.getPieceAt(slot.x, slot.y)) {
+        count++;
         const piece = new BoardPiece({
           type: Math.floor(Math.random() * 5),
           size: cellSize,
@@ -110,6 +113,30 @@ export default class Board {
       }
     }
     this.remapPieces();
+    return count;
+  }
+
+
+  lockCurrentPieces() {
+    const { pieces } = this;
+    for (let i = 0; i < pieces.length; i++) {
+      if (pieces[i].power === 1) {
+        pieces[i].locked = true;
+      }
+    }
+  }
+
+  collectPiecesPower() {
+    const { pieces } = this;
+    let power = 0;
+    for (let i = 0; i < pieces.length; i++) {
+      const piece = pieces[i];
+      if (piece.power > 1) {
+        power += piece.power;
+        piece.power = 0;
+      }
+    }
+    return power;
   }
 
   applyGravity() {
@@ -136,6 +163,7 @@ export default class Board {
     const { grid, analyser } = this;
     this.remapPieces();
     const piece = this.getPieceAt(x, y);
+    if (piece.locked) return;
     const moves = [];
     if (!piece) return;
     const crossNeighbors = grid.getCrossNeighbors(piece.slot);
@@ -145,11 +173,12 @@ export default class Board {
       for (let i = 0; i < neighbors.length; i++) {
         const slot = neighbors[i];
         const current = this.getPieceAt(slot.x, slot.y);
-        if (!current) break;
+        if (!current || current.locked) break;
         const shiftDir = grid.invertDirection(DIRECTIONS[dir]);
         if (i === 0 && current.type === piece.type) {
           const move = this.mergePieces(current, piece, shiftDir);
           moves.push(move);
+          piece.power += current.power;
           attract = true;
         } else if (attract) {
           const move = this.shiftPiece(current, shiftDir);
@@ -161,8 +190,13 @@ export default class Board {
     this.applyGravity();
     analyser.update();
     if (analyser.movesLeft === 0) {
-      console.log('fillEmptySlots')
-      this.fillEmptySlots();
+      console.log('fillEmptySlots');
+      this.totalPower += this.collectPiecesPower();
+      console.log('Power:', this.totalPower);
+      this.lockCurrentPieces();
+      if (this.fillEmptySlots() === 0) {
+        console.log('game over');
+      }
     }
   }
 

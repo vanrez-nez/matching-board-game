@@ -18,12 +18,18 @@ function getMovesCount(board) {
   const accountedPieces = {};
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
+    if (piece.locked) continue;
     const neighbors = getAllNeighbors(board, piece);
     for (let j = 0; j < neighbors.length; j++) {
       const neighbor = neighbors[j];
       // avoid counting reciprocal movements
       const accounted = accountedPieces[neighbor.id];
-      if (!accounted && neighbor.type === piece.type) {
+      if (
+        !accounted &&
+        neighbor.type === piece.type &&
+        neighbor.locked === false &&
+        piece.locked === false
+      ) {
         availableMoves++;
       }
     }
@@ -52,6 +58,7 @@ export default class Analyser {
       copyBoard.rotation += 90;
       copyBoard.applyGravity();
     }
+    console.log('moves left:', totalMoves);
     this.movesLeft = totalMoves;
   }
 }
